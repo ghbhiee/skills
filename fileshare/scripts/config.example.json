@@ -1,0 +1,5 @@
+{
+  "host": "https://fileshare.example.com",
+  "token": "REPLACE_WITH_YOUR_FILESHARE_TOKEN",
+  "ttl_days": 7
+}

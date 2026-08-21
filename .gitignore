@@ -1,0 +1,11 @@
+# credentials — never commit
+.env
+.env.*
+!**/scripts/.env.example
+config.json
+!**/scripts/config.example.json
+
+# python
+*.pyc
+__pycache__/
+.cache/

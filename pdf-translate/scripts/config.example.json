@@ -1,0 +1,6 @@
+{
+  "_comment": "Copy to config.json and fill in. config.json is gitignored — never commit it.",
+  "api_key": "sk-your-deepseek-key",
+  "base_url": "https://api.deepseek.com",
+  "model": "deepseek-chat"
+}

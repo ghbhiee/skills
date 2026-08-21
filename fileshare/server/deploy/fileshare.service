@@ -1,0 +1,22 @@
+[Unit]
+Description=Fileshare upload backend
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+Environment=FILESHARE_DATA=/var/www/fileshare/data
+Environment=FILESHARE_TOKEN_FILE=/opt/fileshare/token
+Environment=FILESHARE_BASE=https://fileshare.example.com
+Environment=FILESHARE_TTL_DAYS=7
+Environment=FILESHARE_LISTEN=127.0.0.1
+Environment=FILESHARE_PORT=8787
+ExecStart=/usr/bin/python3 /opt/fileshare/server.py
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

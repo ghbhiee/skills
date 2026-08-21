@@ -1,0 +1,7 @@
+# Fileshare maintenance
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# clean expired shares every hour
+7 * * * * www-data /opt/fileshare/cleanup.sh >/dev/null 2>&1
+# reload nginx daily so renewed TLS certs are picked up
+17 3 * * * root nginx -t >/dev/null 2>&1 && nginx -s reload >/dev/null 2>&1
