@@ -15,7 +15,9 @@ You only need the server half if you are standing up your own instance. To just 
 
 Hand this to your coding agent:
 
-> Install the fileshare skill from https://github.com/ghbhiee/skills and tell me where to put my server host and token.
+> Install the fileshare skill from https://github.com/ghbhiee/skills — copy the `fileshare/`
+> directory into my agent skills folders, create `scripts/config.json` from the example, and
+> tell me where to put my server host and admin token.
 
 Or do it by hand:
 

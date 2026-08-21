@@ -34,7 +34,10 @@ For `paper.pdf` you get three files in `<pdf-dir>/translated/`:
 
 Hand this to your coding agent:
 
-> Install the pdf-translate skill from https://github.com/ghbhiee/skills, install BabelDOC, and tell me where to put my API key.
+> Install the pdf-translate skill from https://github.com/ghbhiee/skills — copy the
+> `pdf-translate/` directory into my agent skills folders, install the BabelDOC engine
+> (`uv tool install BabelDOC`), create `scripts/config.json` from the example, and tell me
+> where to put my API key.
 
 Or do it by hand:
 

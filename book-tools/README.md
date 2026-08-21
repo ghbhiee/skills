@@ -16,7 +16,9 @@ Anna's Archive — so most of the time you just search and download without nami
 
 Hand this to your coding agent:
 
-> Install the book-tools skill from https://github.com/ghbhiee/skills and walk me through its preflight.
+> Install the book-tools skill from https://github.com/ghbhiee/skills — copy the
+> `book-tools/` directory into my agent skills folders, then run
+> `python3 scripts/book.py preflight` and walk me through whatever it reports.
 
 Or do it by hand:
 

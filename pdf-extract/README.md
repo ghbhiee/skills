@@ -32,7 +32,8 @@ output comes back empty. The `fitz` probe is printed as information, never used 
 
 Hand this to your coding agent:
 
-> Install the pdf-extract skill from https://github.com/ghbhiee/skills and run its setup script.
+> Install the pdf-extract skill from https://github.com/ghbhiee/skills — copy the
+> `pdf-extract/` directory into my agent skills folders and run its `scripts/setup.sh`.
 
 Or do it by hand:
 

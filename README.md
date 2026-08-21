@@ -8,50 +8,96 @@ Compatible with Claude Code, Codex, OpenClaw, Hermes, WorkBuddy — anything tha
 
 ## Skills
 
-| Skill | What it does | Setup |
-|-------|--------------|-------|
-| [**fileshare**](fileshare/) | Turns a local file, folder, Markdown note, or HTML page into a temporary, login-free public link. Markdown renders as a page; folders with `index.html` run as web apps. Includes the self-hosted [server](fileshare/server/). | `scripts/config.json` — server host + admin token |
-| [**pdf-translate**](pdf-translate/) | Translates academic and professional PDFs while preserving the layout — tables, flowchart labels, text color and formulas all survive. Auto-extracts a document glossary first so acronyms stay consistent. Outputs mono + bilingual PDFs and the glossary. | `scripts/config.json` — OpenAI-compatible API key; plus `uv tool install BabelDOC` |
-| [**pdf-extract**](pdf-extract/) | Converts PDFs to clean Markdown or JSON for LLMs and RAG — reading order, headings, tables, bounding boxes. Auto-routes between a fast local engine and OCR for scans, with a fallback chain around two known engine crashes. | `scripts/setup.sh` — Java + Python deps. No credentials, fully local |
-| [**book-tools**](book-tools/) | Searches and downloads books from Z-Library and Anna's Archive, and OCRs scanned book PDFs into text and EPUB. | `~/.codex/skills-data/book-tools/.env` — Z-Library login, optional Anna's Archive key |
+Install only what you want — each one stands alone.
 
-The two PDF skills are complements, not alternatives: `pdf-translate` keeps the page and
-swaps the language, `pdf-extract` throws the page away and keeps the structure. A scanned PDF
-has no text layer, so it goes through `pdf-extract` first.
+| Skill | What it does |
+|-------|--------------|
+| [**fileshare**](fileshare/) | Turns a local file, folder, Markdown note, or HTML page into a temporary, login-free public link |
+| [**pdf-translate**](pdf-translate/) | Translates academic and professional PDFs without destroying the layout |
+| [**pdf-extract**](pdf-extract/) | Converts PDFs to clean Markdown or JSON for LLMs and RAG |
+| [**book-tools**](book-tools/) | Searches and downloads books, and OCRs scanned book PDFs |
 
 ## Install
 
-Give your coding agent the link and one line:
+Pick a skill below and hand its prompt to your coding agent. The agent clones the repo,
+copies that directory into whichever runtimes it finds on the machine, and installs the
+tools the skill needs. You do not have to tell it how.
 
-> Install the skills from https://github.com/ghbhiee/skills, then tell me which config files I need to fill in.
+### fileshare
 
-That is the whole thing. The agent clones the repo, copies each skill directory
-into whatever runtimes it finds on the machine, installs the tools each skill needs, and
-reports back what still needs a credential.
+Temporary, login-free public links for local files. Markdown renders as a styled page, a
+self-contained `.html` renders in the browser, and a folder with an `index.html` runs as a
+web app. Links expire on their own. You point it at a server **you** control — the
+self-hosted backend lives in [`fileshare/server/`](fileshare/server/).
 
-To skip the round trip, hand it the values up front:
+> Install the fileshare skill from https://github.com/ghbhiee/skills — copy the `fileshare/`
+> directory into my agent skills folders, create `scripts/config.json` from the example, and
+> tell me where to put my server host and admin token.
 
-> Install the skills from https://github.com/ghbhiee/skills. My DeepSeek API key is `sk-...`,
-> my fileshare server is `https://files.example.com` with admin token `...`. Write them into
-> the right config files, and don't echo them back to me.
+Needs afterwards: `fileshare/scripts/config.json` — `host` (your server's base URL) and
+`token` (its admin token). Optional `ttl_days`. The scripts refuse to run while `host` is
+still the placeholder, so they can never point at someone else's server by accident.
 
-(Anything you paste into a prompt lands in that session's transcript — if you would rather it
-did not, use the first form and fill in the files yourself.)
+### pdf-translate
 
-## Configuration
+Layout-preserving translation of papers and other professional PDFs. Tables, flowchart
+labels, text color and formulas all survive the round trip. It extracts a whole-document
+glossary before translating, so an acronym is resolved from context and stays consistent —
+in a Michigan cohort study `MI` comes out as 密歇根州, not 心肌梗死. Outputs a
+translation-only PDF, a bilingual one, and the glossary as CSV.
 
-After install, each skill needs its own file filled in. Nothing reads a global env var.
+> Install the pdf-translate skill from https://github.com/ghbhiee/skills — copy the
+> `pdf-translate/` directory into my agent skills folders, install the BabelDOC engine
+> (`uv tool install BabelDOC`), create `scripts/config.json` from the example, and tell me
+> where to put my API key.
 
-| Skill | File | Fill in |
-|-------|------|---------|
-| **fileshare** | `<skill>/scripts/config.json` (from `config.example.json`) | `host` — your server's base URL; `token` — its admin token. Optional `ttl_days`. |
-| **pdf-translate** | `<skill>/scripts/config.json` (from `config.example.json`) | `api_key` for any OpenAI-compatible endpoint. Optional `base_url` / `model` (defaults to DeepSeek). Also needs `uv tool install BabelDOC`. |
-| **pdf-extract** | — | Nothing. Fully local. Run `scripts/setup.sh` once for Java + Python deps. |
-| **book-tools** | `~/.codex/skills-data/book-tools/.env` (from `scripts/.env.example`) | `ZLIB_EMAIL` / `ZLIB_PASSWORD`; optional `ANNAS_SECRET_KEY`. Run `scripts/book.py preflight` to check. |
+Needs afterwards: `pdf-translate/scripts/config.json` — `api_key` for any OpenAI-compatible
+endpoint. Optional `base_url` / `model`; the default is DeepSeek, which costs pennies for a
+20-page paper.
 
-`config.json` and `.env` are gitignored — the committed `*.example.*` files are templates, so
-your credentials never end up in a commit. `fileshare` also needs a server you control; see
-[`fileshare/server/`](fileshare/server/).
+### pdf-extract
+
+PDFs to clean Markdown or JSON for feeding an LLM or building a RAG index — reading order,
+heading hierarchy, tables, bounding boxes. It routes each file itself: a fast local engine
+for anything with a text layer, OCR for scans, and a fallback chain around two known engine
+crashes so you get output instead of a silent 0-byte file.
+
+> Install the pdf-extract skill from https://github.com/ghbhiee/skills — copy the
+> `pdf-extract/` directory into my agent skills folders and run its `scripts/setup.sh`.
+
+Needs afterwards: nothing. No credentials, no network — it all runs locally. `setup.sh`
+installs Java and the Python deps, and asks before pulling the large OCR extras.
+
+### book-tools
+
+Book search and download across Z-Library and Anna's Archive behind one CLI, plus OCR of
+scanned book PDFs into text and EPUB.
+
+> Install the book-tools skill from https://github.com/ghbhiee/skills — copy the
+> `book-tools/` directory into my agent skills folders, then run
+> `python3 scripts/book.py preflight` and walk me through whatever it reports.
+
+Needs afterwards: `~/.codex/skills-data/book-tools/.env` — `ZLIB_EMAIL` and `ZLIB_PASSWORD`;
+`ANNAS_SECRET_KEY` is optional and needs a donation. `preflight` tells you exactly what is
+still missing. The OCR script additionally wants `OPENAI_API_KEY` and calls a paid API.
+
+### Notes on credentials
+
+Credentials go in a file, never a global env var, so the skills keep working in
+non-interactive shells and across runtimes. Every `config.json` / `.env` is gitignored; the
+committed `*.example.*` files are the templates.
+
+You can also hand the values straight to the agent instead of editing files yourself:
+
+> ...and my API key is `sk-...`. Write it into the config file and don't echo it back to me.
+
+Anything you paste into a prompt lands in that session's transcript. If you would rather it
+did not, use the plain prompt and fill in the file by hand.
+
+### Want all four
+
+> Install every skill from https://github.com/ghbhiee/skills into my agent skills folders,
+> then tell me which config files I still need to fill in.
 
 ## Conventions
 
