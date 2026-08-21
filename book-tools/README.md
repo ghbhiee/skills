@@ -14,11 +14,22 @@ Anna's Archive — so most of the time you just search and download without nami
 
 ## Install
 
-Hand this to your coding agent:
+Hand one of these to your coding agent — **A** keeps the secret out of the conversation,
+**B** trades that for one less round trip:
+
+**A — install, fill in the config yourself:**
 
 > Install the book-tools skill from https://github.com/ghbhiee/skills — copy the
 > `book-tools/` directory into my agent skills folders, then run
 > `python3 scripts/book.py preflight` and walk me through whatever it reports.
+
+**B — values inline** (replace the placeholders; this puts the password in your transcript):
+
+> Install the book-tools skill from https://github.com/ghbhiee/skills — copy the
+> `book-tools/` directory into my agent skills folders. My Z-Library login is
+> `<ZLIB_EMAIL>` / `<ZLIB_PASSWORD>`. Write them into
+> `~/.codex/skills-data/book-tools/.env`, run `python3 scripts/book.py preflight` to confirm
+> it works, and don't echo the password back to me.
 
 Or do it by hand:
 

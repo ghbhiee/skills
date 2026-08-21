@@ -19,9 +19,15 @@ Install only what you want — each one stands alone.
 
 ## Install
 
-Pick a skill below and hand its prompt to your coding agent. The agent clones the repo,
-copies that directory into whichever runtimes it finds on the machine, and installs the
-tools the skill needs. You do not have to tell it how.
+Pick a skill below and hand a prompt to your coding agent. It clones the repo, copies that
+directory into whichever runtimes it finds on the machine, and installs the tools the skill
+needs. You do not have to tell it how.
+
+Each skill that needs credentials offers two prompts. **A** installs first and asks you
+afterwards, so no secret ever enters the conversation. **B** carries the values inline —
+replace the `<PLACEHOLDERS>` before sending — which is one step instead of two, at the cost
+of putting the secret in that session's transcript (and whatever stores it). Convenience or
+containment is your call, per skill and per machine.
 
 ### fileshare
 
@@ -30,13 +36,22 @@ self-contained `.html` renders in the browser, and a folder with an `index.html`
 web app. Links expire on their own. You point it at a server **you** control — the
 self-hosted backend lives in [`fileshare/server/`](fileshare/server/).
 
+**A — install, fill in the config yourself:**
+
 > Install the fileshare skill from https://github.com/ghbhiee/skills — copy the `fileshare/`
 > directory into my agent skills folders, create `scripts/config.json` from the example, and
 > tell me where to put my server host and admin token.
 
-Needs afterwards: `fileshare/scripts/config.json` — `host` (your server's base URL) and
-`token` (its admin token). Optional `ttl_days`. The scripts refuse to run while `host` is
-still the placeholder, so they can never point at someone else's server by accident.
+**B — values inline:**
+
+> Install the fileshare skill from https://github.com/ghbhiee/skills — copy the `fileshare/`
+> directory into my agent skills folders. My server is `<https://files.example.com>` and the
+> admin token is `<FILESHARE_ADMIN_TOKEN>`. Write both into `scripts/config.json`, verify the
+> skill loads, and don't echo the token back to me.
+
+Needs: `fileshare/scripts/config.json` — `host` (your server's base URL) and `token` (its
+admin token). Optional `ttl_days`. The scripts refuse to run while `host` is still the
+placeholder, so they can never point at someone else's server by accident.
 
 ### pdf-translate
 
@@ -46,14 +61,24 @@ glossary before translating, so an acronym is resolved from context and stays co
 in a Michigan cohort study `MI` comes out as 密歇根州, not 心肌梗死. Outputs a
 translation-only PDF, a bilingual one, and the glossary as CSV.
 
+**A — install, fill in the config yourself:**
+
 > Install the pdf-translate skill from https://github.com/ghbhiee/skills — copy the
 > `pdf-translate/` directory into my agent skills folders, install the BabelDOC engine
 > (`uv tool install BabelDOC`), create `scripts/config.json` from the example, and tell me
 > where to put my API key.
 
-Needs afterwards: `pdf-translate/scripts/config.json` — `api_key` for any OpenAI-compatible
-endpoint. Optional `base_url` / `model`; the default is DeepSeek, which costs pennies for a
-20-page paper.
+**B — values inline:**
+
+> Install the pdf-translate skill from https://github.com/ghbhiee/skills — copy the
+> `pdf-translate/` directory into my agent skills folders and install the BabelDOC engine
+> (`uv tool install BabelDOC`). My API key is `<DEEPSEEK_API_KEY>`. Write it into
+> `scripts/config.json`, verify the skill loads, and don't echo the key back to me.
+
+Needs: `pdf-translate/scripts/config.json` — `api_key` for any OpenAI-compatible endpoint.
+Optional `base_url` / `model`; the default is DeepSeek, which costs pennies for a 20-page
+paper. To use another provider, add `and set base_url to <URL> and model to <NAME>` to
+prompt B.
 
 ### pdf-extract
 
@@ -62,42 +87,54 @@ heading hierarchy, tables, bounding boxes. It routes each file itself: a fast lo
 for anything with a text layer, OCR for scans, and a fallback chain around two known engine
 crashes so you get output instead of a silent 0-byte file.
 
+One prompt only — there is nothing to configure.
+
 > Install the pdf-extract skill from https://github.com/ghbhiee/skills — copy the
 > `pdf-extract/` directory into my agent skills folders and run its `scripts/setup.sh`.
 
-Needs afterwards: nothing. No credentials, no network — it all runs locally. `setup.sh`
-installs Java and the Python deps, and asks before pulling the large OCR extras.
+Needs: nothing. No credentials, no network — it all runs locally. `setup.sh` installs Java
+and the Python deps, and asks before pulling the large OCR extras.
 
 ### book-tools
 
 Book search and download across Z-Library and Anna's Archive behind one CLI, plus OCR of
 scanned book PDFs into text and EPUB.
 
+**A — install, fill in the config yourself:**
+
 > Install the book-tools skill from https://github.com/ghbhiee/skills — copy the
 > `book-tools/` directory into my agent skills folders, then run
 > `python3 scripts/book.py preflight` and walk me through whatever it reports.
 
-Needs afterwards: `~/.codex/skills-data/book-tools/.env` — `ZLIB_EMAIL` and `ZLIB_PASSWORD`;
+**B — values inline:**
+
+> Install the book-tools skill from https://github.com/ghbhiee/skills — copy the
+> `book-tools/` directory into my agent skills folders. My Z-Library login is
+> `<ZLIB_EMAIL>` / `<ZLIB_PASSWORD>`. Write them into
+> `~/.codex/skills-data/book-tools/.env`, run `python3 scripts/book.py preflight` to confirm
+> it works, and don't echo the password back to me.
+
+Needs: `~/.codex/skills-data/book-tools/.env` — `ZLIB_EMAIL` and `ZLIB_PASSWORD`;
 `ANNAS_SECRET_KEY` is optional and needs a donation. `preflight` tells you exactly what is
 still missing. The OCR script additionally wants `OPENAI_API_KEY` and calls a paid API.
-
-### Notes on credentials
-
-Credentials go in a file, never a global env var, so the skills keep working in
-non-interactive shells and across runtimes. Every `config.json` / `.env` is gitignored; the
-committed `*.example.*` files are the templates.
-
-You can also hand the values straight to the agent instead of editing files yourself:
-
-> ...and my API key is `sk-...`. Write it into the config file and don't echo it back to me.
-
-Anything you paste into a prompt lands in that session's transcript. If you would rather it
-did not, use the plain prompt and fill in the file by hand.
 
 ### Want all four
 
 > Install every skill from https://github.com/ghbhiee/skills into my agent skills folders,
 > then tell me which config files I still need to fill in.
+
+Add the credentials inline the same way if you would rather not be asked:
+
+> ...My fileshare server is `<https://files.example.com>` with admin token `<TOKEN>`, and my
+> translation API key is `<DEEPSEEK_API_KEY>`. Write them into the right config files and
+> don't echo them back to me.
+
+### Where credentials live
+
+Every skill reads its credentials from a file, never a global environment variable, so it
+keeps working in non-interactive shells and across runtimes. Each `config.json` / `.env` is
+gitignored and the committed `*.example.*` file is its template — your keys never end up in
+a commit, whichever prompt you used to write them.
 
 ## Conventions
 

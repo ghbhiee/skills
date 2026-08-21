@@ -13,11 +13,21 @@ You only need the server half if you are standing up your own instance. To just 
 
 ## Install the skill
 
-Hand this to your coding agent:
+Hand one of these to your coding agent — **A** keeps the secret out of the conversation,
+**B** trades that for one less round trip:
+
+**A — install, fill in the config yourself:**
 
 > Install the fileshare skill from https://github.com/ghbhiee/skills — copy the `fileshare/`
 > directory into my agent skills folders, create `scripts/config.json` from the example, and
 > tell me where to put my server host and admin token.
+
+**B — values inline** (replace the placeholders; this puts the token in your transcript):
+
+> Install the fileshare skill from https://github.com/ghbhiee/skills — copy the `fileshare/`
+> directory into my agent skills folders. My server is `<https://files.example.com>` and the
+> admin token is `<FILESHARE_ADMIN_TOKEN>`. Write both into `scripts/config.json`, verify the
+> skill loads, and don't echo the token back to me.
 
 Or do it by hand:
 

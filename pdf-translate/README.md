@@ -32,12 +32,22 @@ For `paper.pdf` you get three files in `<pdf-dir>/translated/`:
 
 ## Install
 
-Hand this to your coding agent:
+Hand one of these to your coding agent — **A** keeps the secret out of the conversation,
+**B** trades that for one less round trip:
+
+**A — install, fill in the config yourself:**
 
 > Install the pdf-translate skill from https://github.com/ghbhiee/skills — copy the
 > `pdf-translate/` directory into my agent skills folders, install the BabelDOC engine
 > (`uv tool install BabelDOC`), create `scripts/config.json` from the example, and tell me
 > where to put my API key.
+
+**B — values inline** (replace the placeholders; this puts the key in your transcript):
+
+> Install the pdf-translate skill from https://github.com/ghbhiee/skills — copy the
+> `pdf-translate/` directory into my agent skills folders and install the BabelDOC engine
+> (`uv tool install BabelDOC`). My API key is `<DEEPSEEK_API_KEY>`. Write it into
+> `scripts/config.json`, verify the skill loads, and don't echo the key back to me.
 
 Or do it by hand:
 
