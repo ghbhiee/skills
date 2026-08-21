@@ -15,7 +15,7 @@ Install only what you want — each one stands alone.
 | [**fileshare**](fileshare/) | Turns a local file, folder, Markdown note, or HTML page into a temporary, login-free public link |
 | [**pdf-translate**](pdf-translate/) | Translates academic and professional PDFs without destroying the layout |
 | [**pdf-extract**](pdf-extract/) | Converts PDFs to clean Markdown or JSON for LLMs and RAG |
-| [**book-tools**](book-tools/) | Searches and downloads books, and OCRs scanned book PDFs |
+| [**book-tools**](book-tools/) | Searches and downloads books from Z-Library and Anna's Archive |
 
 ## Install
 
@@ -97,8 +97,8 @@ and the Python deps, and asks before pulling the large OCR extras.
 
 ### book-tools
 
-Book search and download across Z-Library and Anna's Archive behind one CLI, plus OCR of
-scanned book PDFs into text and EPUB.
+Book search and download across Z-Library and Anna's Archive behind one CLI — it picks the
+backend itself, trying Z-Library first and falling back to Anna's Archive.
 
 **A — install, fill in the config yourself:**
 
@@ -116,7 +116,7 @@ scanned book PDFs into text and EPUB.
 
 Needs: `book-tools/scripts/config.json` — `zlib.email` and `zlib.password`;
 `annas.secret_key` is optional and needs a donation. `preflight` tells you exactly what is
-still missing. The OCR script additionally wants `OPENAI_API_KEY` and calls a paid API.
+still missing.
 
 ### Want all four
 

@@ -1,6 +1,6 @@
 ---
 name: book-tools
-description: Search and download books from Z-Library and Anna's Archive, or OCR scanned book PDFs into text and EPUB. Use when the user wants to find, search, download, look up, or OCR books, papers, or ebooks.
+description: Search and download books from Z-Library and Anna's Archive. Use when the user wants to find, search, download, or look up books, papers, or ebooks.
 ---
 
 # Book Tools
@@ -213,22 +213,6 @@ Size: [file size]
 ```
 
 If using Z-Library, also mention any remaining daily download quota.
-
-## Scanned PDF OCR
-
-Use `scripts/ocr_book_openai.py` only when the user asks to OCR a scanned PDF or convert one into text/EPUB. It requires `pdftoppm`, the Python `openai` package, and `OPENAI_API_KEY`; because it invokes a paid API, do not run it without an explicit OCR/conversion request.
-
-```bash
-python3 ${SKILL_PATH}/scripts/ocr_book_openai.py /path/to/book.pdf \
-  --out-dir ./tmp/book-ocr \
-  --model gpt-4.1-mini \
-  --chunk-size 15 \
-  --pause-seconds 0.75 \
-  --title "Book title" \
-  --creator "Author"
-```
-
-The helper renders pages to JPEG, resumes completed chunks, writes `book_cleaned.txt`, and packages `book_cleaned.epub`.
 
 ## Other Commands
 

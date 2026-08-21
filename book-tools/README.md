@@ -1,6 +1,6 @@
 # book-tools
 
-Search and download books through one CLI, and OCR scanned book PDFs into text and EPUB.
+Search and download books through one CLI.
 
 Two backends behind a single interface:
 
@@ -96,16 +96,8 @@ See [`SKILL.md`](SKILL.md) for the full command surface (filters, formats, the d
 workflow) and [`references/api_reference.md`](references/api_reference.md) for the backend
 APIs.
 
-## OCR
+## Not this skill
 
-`scripts/ocr_book_openai.py` turns a scanned book PDF into text and EPUB. It is separate
-from search/download and needs `pdftoppm`, the Python `openai` package, and `OPENAI_API_KEY`.
-It calls a **paid** API, so run it only on an explicit request:
-
-```bash
-python3 ~/.claude/skills/book-tools/scripts/ocr_book_openai.py book.pdf \
-  --out-dir ./tmp/book-ocr --title "..." --creator "..."
-```
-
-For general-purpose PDF → Markdown/JSON extraction that runs entirely locally and needs no
-API key, use [pdf-extract](../pdf-extract/) instead.
+This skill finds and downloads books; it does not convert them. For a scanned PDF, or any
+PDF you want as Markdown/JSON rather than as a file on disk, use
+[pdf-extract](../pdf-extract/) — fully local, no API key.
