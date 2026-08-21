@@ -41,9 +41,9 @@ Returns standardized JSON:
 | Check | Fix |
 |-------|-----|
 | `requests` missing | `bash ${SKILL_PATH}/scripts/setup.sh install-deps` (or manually: `pip3 install requests` / `uv pip install requests`) |
-| `zlib` not configured | Guide user to edit `~/.codex/skills-data/book-tools/.env` — set `ZLIB_EMAIL` and `ZLIB_PASSWORD` |
-| `zlib` expired | Cached tokens expired and no email/password in `.env`. Guide user to re-add credentials to `~/.codex/skills-data/book-tools/.env` |
-| `annas_api_key` not configured | Guide user to donate at Anna's Archive for API key, then add `ANNAS_SECRET_KEY` to `~/.codex/skills-data/book-tools/.env` |
+| `zlib` not configured | Guide user to edit `${SKILL_PATH}/scripts/config.json` — set `zlib.email` and `zlib.password` |
+| `zlib` expired | Cached tokens expired and no email/password stored. Guide user to re-add `zlib.email` / `zlib.password` in `${SKILL_PATH}/scripts/config.json` |
+| `annas_api_key` not configured | Guide user to donate at Anna's Archive for an API key, then set `annas.secret_key` in `${SKILL_PATH}/scripts/config.json` |
 | `annas_binary` missing | `bash ${SKILL_PATH}/scripts/setup.sh install-annas` (or manually: download from [annas-mcp releases](https://github.com/iosifache/annas-mcp/releases), extract to `~/.local/bin/annas-mcp`) |
 
 ## Setup (First-Time Only)
@@ -58,32 +58,36 @@ bash ${SKILL_PATH}/scripts/setup.sh install-deps
 
 ### Step 2: Configure Credentials
 
-Credentials are stored in `~/.codex/skills-data/book-tools/.env`. Create the file from the skill's bundled template:
+Credentials live in `${SKILL_PATH}/scripts/config.json`, next to the scripts. Create it from
+the bundled template:
 
 ```bash
-mkdir -p ~/.codex/skills-data/book-tools
-# Only copy if .env does not already exist — never overwrite existing credentials
-if [ ! -f ~/.codex/skills-data/book-tools/.env ]; then
-  cp ${SKILL_PATH}/scripts/.env.example ~/.codex/skills-data/book-tools/.env
+# Only copy if config.json does not already exist — never overwrite existing credentials
+if [ ! -f ${SKILL_PATH}/scripts/config.json ]; then
+  cp ${SKILL_PATH}/scripts/config.example.json ${SKILL_PATH}/scripts/config.json
 else
-  echo "Existing .env found — skipping copy to preserve your credentials."
+  echo "Existing config.json found — skipping copy to preserve credentials."
 fi
 ```
 
-The `.env` file looks like this:
+The file looks like this:
 
+```json
+{
+  "zlib": {
+    "email": "you@example.com",
+    "password": "your-z-library-password"
+  },
+  "annas": {
+    "secret_key": ""
+  }
+}
 ```
-# Z-Library credentials
-ZLIB_EMAIL=your_email@example.com
-ZLIB_PASSWORD=your_password_here
 
-# Anna's Archive (optional, requires donation for API key)
-# ANNAS_SECRET_KEY=your_api_key_here
-```
-
-**IMPORTANT**: Do NOT ask the user for credentials directly in chat. Instead:
-1. Create the `.env` file (or `.env.example` template)
-2. Tell the user to edit `~/.codex/skills-data/book-tools/.env` with their credentials
+**IMPORTANT**: Do NOT ask the user for credentials directly in chat unless they offered them
+first. Instead:
+1. Create `scripts/config.json` from the template
+2. Tell the user to edit `${SKILL_PATH}/scripts/config.json`
 3. Wait for the user to confirm they've filled it in
 4. Then proceed with search
 
@@ -97,15 +101,24 @@ Confirm `ready: true` before proceeding.
 
 ### Credential Storage
 
-**Canonical path**: `~/.codex/skills-data/book-tools/.env` — this is the single place users should edit credentials.
+**Canonical path**: `${SKILL_PATH}/scripts/config.json` — one file, inside the skill, holding
+both credentials and settings. It is gitignored, so it survives in place and never reaches a
+commit. Override the location with `$BOOK_TOOLS_CONFIG` if you need to.
 
-| Variable | Purpose | Required |
-|----------|---------|----------|
-| `ZLIB_EMAIL` | Z-Library email | For Z-Library backend |
-| `ZLIB_PASSWORD` | Z-Library password | For Z-Library backend |
-| `ANNAS_SECRET_KEY` | Anna's Archive API key | For Anna's Archive backend |
+| Key | Purpose | Required |
+|-----|---------|----------|
+| `zlib.email` | Z-Library email | For Z-Library backend |
+| `zlib.password` | Z-Library password | For Z-Library backend |
+| `zlib.domain` | Pin a working EAPI domain instead of probing | No |
+| `annas.secret_key` | Anna's Archive API key | For Anna's Archive backend |
 
-On first successful Z-Library login, session tokens are automatically cached in `~/.codex/skills-data/book-tools/config.json` for performance. This file is auto-managed — do not edit it manually. If login issues occur, delete `config.json` and the script will re-login using `.env` credentials.
+On first successful Z-Library login, session tokens (`zlib.remix_userid` / `zlib.remix_userkey`)
+are cached back into the same file automatically. Leave those alone; if login misbehaves,
+delete just those two keys and the script re-logs in with the email and password.
+
+Older installs kept credentials in `~/.codex/skills-data/book-tools/.env` or a `config.json`
+under that directory. Those are still read if `scripts/config.json` is absent, and the first
+write migrates everything into `scripts/config.json`.
 
 ## Workflow
 
@@ -243,7 +256,7 @@ python3 ${SKILL_PATH}/scripts/book.py setup
 
 | Error | Cause | Action |
 |-------|-------|--------|
-| "Z-Library not configured" | No credentials | Guide user to edit `~/.codex/skills-data/book-tools/.env` |
+| "Z-Library not configured" | No credentials | Guide user to edit `${SKILL_PATH}/scripts/config.json` |
 | "Z-Library login failed" | Bad credentials or service down | Ask user to verify credentials. Z-Library domains change — if persistent, the vendored `Zlibrary.py` domain may need updating. |
 | "No working Z-Library EAPI domain" or "non-JSON content" | Domains are blocked, moved, or returning an HTML anti-bot/error page | Retry once. If needed, set `ZLIBRARY_EAPI_DOMAIN=https://z-library.ec` in the canonical `.env`; the CLI must report JSON errors without a traceback. |
 | "annas-mcp binary not found" | Binary not installed | Run `setup.sh install-annas` |

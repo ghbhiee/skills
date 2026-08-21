@@ -1,0 +1,10 @@
+{
+  "_comment": "Copy to config.json and fill in. config.json is gitignored — never commit it. Session tokens are cached back into it automatically.",
+  "zlib": {
+    "email": "you@example.com",
+    "password": "your-z-library-password"
+  },
+  "annas": {
+    "secret_key": ""
+  }
+}

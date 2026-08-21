@@ -50,7 +50,7 @@ book.py config reset                        # Delete all config
 
 Config set options:
 - `--zlib-domain` — Optional HTTPS EAPI domain override
-- `--annas-key` — Anna's Archive API key (prefer setting `ANNAS_SECRET_KEY` in `~/.codex/skills-data/book-tools/.env`)
+- `--annas-key` — Anna's Archive API key (prefer setting `annas.secret_key` in `scripts/config.json`)
 - `--annas-binary` — Path to annas-mcp binary
 - `--annas-download-path` — Download directory for Anna's Archive
 - `--annas-mirror` — Alternative mirror URL

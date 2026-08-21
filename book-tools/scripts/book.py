@@ -7,7 +7,7 @@ Backends:
   - annas: Anna's Archive via annas-mcp binary
 
 All output is JSON to stdout. Errors go to stderr with non-zero exit.
-Config stored at ~/.codex/skills-data/book-tools/config.json
+Credentials and settings live in scripts/config.json next to this file.
 """
 
 import argparse
@@ -19,15 +19,21 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-CONFIG_DIR = Path.home() / ".codex" / "skills-data" / "book-tools"
+
+# The one file to edit. Gitignored; create it from config.example.json.
+CONFIG_FILE = Path(os.environ.get("BOOK_TOOLS_CONFIG") or SCRIPT_DIR / "config.json")
+
+# Older installs kept credentials outside the skill. Still read, never written:
+# the first save migrates everything into CONFIG_FILE.
 LEGACY_CONFIG_DIRS = [
+    Path.home() / ".codex" / "skills-data" / "book-tools",
     Path.home() / ".codex" / "skills-data" / "zlib-download",
     Path.home() / ".codex" / "book-tools",
     Path.home() / ".claude" / "book-tools",
 ]
-CONFIG_FILE = CONFIG_DIR / "config.json"
-ENV_FILE = CONFIG_DIR / ".env"
 DEFAULT_DOWNLOAD_DIR = Path.home() / "Downloads"
+
+CONFIG_HINT = f"Edit {CONFIG_FILE} (copy config.example.json if it is missing)"
 
 
 # ---------------------------------------------------------------------------
@@ -35,16 +41,15 @@ DEFAULT_DOWNLOAD_DIR = Path.home() / "Downloads"
 # ---------------------------------------------------------------------------
 
 def _load_env() -> dict:
-    """Load key=value pairs from .env file."""
+    """Load key=value pairs from a legacy .env file, if one is still around."""
     env = {}
-    env_file = ENV_FILE
-    if not env_file.exists():
-        for legacy_dir in LEGACY_CONFIG_DIRS:
-            candidate = legacy_dir / ".env"
-            if candidate.exists():
-                env_file = candidate
-                break
-    if env_file.exists():
+    env_file = None
+    for legacy_dir in LEGACY_CONFIG_DIRS:
+        candidate = legacy_dir / ".env"
+        if candidate.exists():
+            env_file = candidate
+            break
+    if env_file is not None:
         for line in env_file.read_text().splitlines():
             line = line.strip()
             if not line or line.startswith("#"):
@@ -65,9 +70,13 @@ def load_config() -> dict:
                 config_file = candidate
                 break
     if config_file.exists():
-        cfg = json.loads(config_file.read_text())
+        try:
+            cfg = json.loads(config_file.read_text())
+        except json.JSONDecodeError as e:
+            die(f"{config_file} is not valid JSON: {e}", CONFIG_HINT)
+    cfg.pop("_comment", None)
 
-    # Merge .env values (env file overrides config.json)
+    # Merge legacy .env values (they win, so an unmigrated install keeps working)
     env = _load_env()
     if env.get("ZLIB_EMAIL") or env.get("ZLIB_PASSWORD"):
         cfg.setdefault("zlib", {})
@@ -86,7 +95,8 @@ def load_config() -> dict:
 
 
 def save_config(cfg: dict):
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    """Always writes CONFIG_FILE, so a legacy install migrates on first save."""
+    CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
     CONFIG_FILE.write_text(json.dumps(cfg, indent=2, ensure_ascii=False))
 
 
@@ -159,15 +169,15 @@ def _get_zlib():
 
     # Step 3: No valid credentials
     if not email and not password and not remix_userid:
-        die("Z-Library not configured. Edit ~/.codex/skills-data/book-tools/.env with your ZLIB_EMAIL and ZLIB_PASSWORD.")
+        die("Z-Library not configured: set zlib.email and zlib.password.", CONFIG_HINT)
     else:
         if last_error:
             die(
                 f"Z-Library access failed: {last_error}",
                 hint="The EAPI domain may be blocked or unavailable. Optionally set "
-                "ZLIBRARY_EAPI_DOMAIN=https://z-library.ec in ~/.codex/skills-data/book-tools/.env",
+                'set "zlib": {"domain": "https://z-library.ec"} in ' + str(CONFIG_FILE),
             )
-        die("Z-Library login failed. Check credentials in ~/.codex/skills-data/book-tools/.env")
+        die("Z-Library login failed: check zlib.email and zlib.password.", CONFIG_HINT)
 
 
 def zlib_search(args):
@@ -336,7 +346,7 @@ def annas_search(args):
     cfg = load_config()
 
     if not cfg.get("annas", {}).get("secret_key"):
-        die("Anna's Archive API key not configured. Add ANNAS_SECRET_KEY to ~/.codex/skills-data/book-tools/.env\n"
+        die("Anna's Archive API key not configured: set annas.secret_key.\n"
             "Get a key by donating to Anna's Archive.")
 
     env = _annas_env()
@@ -366,7 +376,7 @@ def annas_download(args):
     cfg = load_config()
 
     if not cfg.get("annas", {}).get("secret_key"):
-        die("Anna's Archive API key not configured. Add ANNAS_SECRET_KEY to ~/.codex/skills-data/book-tools/.env")
+        die("Anna's Archive API key not configured: set annas.secret_key.", CONFIG_HINT)
 
     filename = args.filename
     if not filename:
@@ -424,7 +434,7 @@ def cmd_search(args):
         else:
             errors.append("annas: not configured")
 
-        die("No backend available. Configure at least one in ~/.codex/skills-data/book-tools/.env:\n"
+        die("No backend available. Configure at least one in " + str(CONFIG_FILE) + ":\n"
             "  Z-Library: set ZLIB_EMAIL and ZLIB_PASSWORD\n"
             "  Anna's Archive: set ANNAS_SECRET_KEY\n"
             f"Details: {'; '.join(errors)}")
@@ -566,7 +576,7 @@ def cmd_preflight(args):
     zlib_has_tokens = bool(zlib_cfg.get("remix_userid") and zlib_cfg.get("remix_userkey"))
     zlib_has_email = bool(zlib_cfg.get("email") and zlib_cfg.get("password"))
     zlib_status = "not_configured"
-    zlib_hint = "Edit ~/.codex/skills-data/book-tools/.env with ZLIB_EMAIL and ZLIB_PASSWORD"
+    zlib_hint = f"Set zlib.email and zlib.password in {CONFIG_FILE}"
 
     if requests_ok and (zlib_has_tokens or zlib_has_email):
         # Attempt live validation with cached tokens
@@ -588,7 +598,7 @@ def cmd_preflight(args):
                     zlib_hint = "Cached tokens expired; will re-login with email/password on next use"
                 else:
                     zlib_status = "expired"
-                    zlib_hint = "Cached tokens expired and no email/password available. Edit ~/.codex/skills-data/book-tools/.env"
+                    zlib_hint = f"Cached tokens expired and no email/password available. Set zlib.email and zlib.password in {CONFIG_FILE}"
             except Exception as exc:
                 zlib_status = "unreachable"
                 zlib_hint = f"Z-Library EAPI validation failed: {exc}"
@@ -625,7 +635,7 @@ def cmd_preflight(args):
             "annas_api_key": {
                 "status": "configured" if annas_key else "not_configured",
                 "required": False,
-                "hint": "Donate at Anna's Archive for API key, add ANNAS_SECRET_KEY to ~/.codex/skills-data/book-tools/.env",
+                "hint": f"Donate at Anna's Archive for an API key, then set annas.secret_key in {CONFIG_FILE}",
             },
         },
         "services": {
@@ -634,7 +644,7 @@ def cmd_preflight(args):
                 "hint": "Run: bash ${SKILL_PATH}/scripts/setup.sh install-annas (or manually download from https://github.com/iosifache/annas-mcp/releases)",
             },
         },
-        "hint": "Ready — at least one backend configured" if ready else "No backend fully configured. Set up Z-Library or Anna's Archive credentials in ~/.codex/skills-data/book-tools/.env",
+        "hint": "Ready — at least one backend configured" if ready else f"No backend fully configured. Set Z-Library or Anna's Archive credentials in {CONFIG_FILE}",
     }
     output(result)
     if not ready:
@@ -688,7 +698,7 @@ def main():
     cfg_show = cfg_sub.add_parser("show", help="Show current config")
     cfg_show.set_defaults(func=cmd_config)
 
-    cfg_set = cfg_sub.add_parser("set", help="Set non-sensitive config values (for credentials, edit ~/.codex/skills-data/book-tools/.env)")
+    cfg_set = cfg_sub.add_parser("set", help="Set non-sensitive config values (credentials go in scripts/config.json)")
     cfg_set.add_argument("--annas-binary", help="Path to annas-mcp binary")
     cfg_set.add_argument("--annas-download-path", help="Anna's Archive download directory")
     cfg_set.add_argument("--annas-mirror", help="Anna's Archive mirror URL")

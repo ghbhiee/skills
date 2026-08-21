@@ -27,9 +27,9 @@ Hand one of these to your coding agent — **A** keeps the secret out of the con
 
 > Install the book-tools skill from https://github.com/ghbhiee/skills — copy the
 > `book-tools/` directory into my agent skills folders. My Z-Library login is
-> `<ZLIB_EMAIL>` / `<ZLIB_PASSWORD>`. Write them into
-> `~/.codex/skills-data/book-tools/.env`, run `python3 scripts/book.py preflight` to confirm
-> it works, and don't echo the password back to me.
+> `<ZLIB_EMAIL>` / `<ZLIB_PASSWORD>`. Write them into `scripts/config.json` as
+> `zlib.email` / `zlib.password`, run `python3 scripts/book.py preflight` to confirm it
+> works, and don't echo the password back to me.
 
 Or do it by hand:
 
@@ -54,19 +54,32 @@ bash ~/.claude/skills/book-tools/scripts/setup.sh install-deps    # python deps
 bash ~/.claude/skills/book-tools/scripts/setup.sh install-annas   # annas-mcp binary
 ```
 
-Credentials go in a `.env` outside the skill directory, so a reinstall never wipes them:
+Credentials go in `scripts/config.json`, right next to the scripts:
 
 ```bash
-mkdir -p ~/.codex/skills-data/book-tools
-cp ~/.claude/skills/book-tools/scripts/.env.example \
-   ~/.codex/skills-data/book-tools/.env
-# ZLIB_EMAIL / ZLIB_PASSWORD   — required for Z-Library
-# ANNAS_SECRET_KEY             — optional, needs a donation to Anna's Archive
-# ZLIBRARY_EAPI_DOMAIN         — optional, pins a working EAPI domain instead of probing
+cp ~/.claude/skills/book-tools/scripts/config.example.json \
+   ~/.claude/skills/book-tools/scripts/config.json
 ```
 
-That path is shared by every runtime the skill is installed into. Re-run `preflight` to confirm. Z-Library session tokens are cached and refreshed from the
-email/password pair, so keep those in `.env` rather than only pasting a token.
+```json
+{
+  "zlib": { "email": "you@example.com", "password": "your-z-library-password" },
+  "annas": { "secret_key": "" }
+}
+```
+
+`zlib.email` / `zlib.password` are what Z-Library needs; `annas.secret_key` is optional and
+requires a donation to Anna's Archive. Add `zlib.domain` to pin a working EAPI domain instead
+of letting the script probe for one. The file is gitignored, so your credentials never reach
+a commit. Point `$BOOK_TOOLS_CONFIG` elsewhere if you would rather keep it outside the skill.
+
+Re-run `preflight` to confirm. On first login the session tokens are cached back into the
+same file (`zlib.remix_userid` / `zlib.remix_userkey`) — leave those alone; they are refreshed
+from the email/password pair, so keep those rather than only pasting a token.
+
+Installs that predate this layout kept credentials in `~/.codex/skills-data/book-tools/`.
+Those are still read when `scripts/config.json` is absent, and the first write migrates them
+into it.
 
 ## Usage
 

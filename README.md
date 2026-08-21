@@ -110,12 +110,12 @@ scanned book PDFs into text and EPUB.
 
 > Install the book-tools skill from https://github.com/ghbhiee/skills — copy the
 > `book-tools/` directory into my agent skills folders. My Z-Library login is
-> `<ZLIB_EMAIL>` / `<ZLIB_PASSWORD>`. Write them into
-> `~/.codex/skills-data/book-tools/.env`, run `python3 scripts/book.py preflight` to confirm
-> it works, and don't echo the password back to me.
+> `<ZLIB_EMAIL>` / `<ZLIB_PASSWORD>`. Write them into `scripts/config.json` as
+> `zlib.email` / `zlib.password`, run `python3 scripts/book.py preflight` to confirm it
+> works, and don't echo the password back to me.
 
-Needs: `~/.codex/skills-data/book-tools/.env` — `ZLIB_EMAIL` and `ZLIB_PASSWORD`;
-`ANNAS_SECRET_KEY` is optional and needs a donation. `preflight` tells you exactly what is
+Needs: `book-tools/scripts/config.json` — `zlib.email` and `zlib.password`;
+`annas.secret_key` is optional and needs a donation. `preflight` tells you exactly what is
 still missing. The OCR script additionally wants `OPENAI_API_KEY` and calls a paid API.
 
 ### Want all four
